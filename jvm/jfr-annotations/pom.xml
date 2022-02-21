@@ -10,7 +10,8 @@
   ~ Copyright 2019-2021 the original author or authors.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <parent>
         <groupId>org.quickperf</groupId>
@@ -39,7 +40,17 @@
         <dependency>
             <groupId>org.openjdk.jmc</groupId>
             <artifactId>flightrecorder.rules.jdk</artifactId>
-            <version>7.1.1</version>
+            <version>${jdk.jfr.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmc</groupId>
+            <artifactId>common</artifactId>
+            <version>${jdk.jfr.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmc</groupId>
+            <artifactId>flightrecorder.rules</artifactId>
+            <version>${jdk.jfr.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>

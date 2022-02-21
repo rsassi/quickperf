@@ -14,9 +14,10 @@ package org.quickperf.jvm.jmcrule;
 import org.openjdk.jmc.common.item.IItemCollection;
 import org.openjdk.jmc.common.util.IPreferenceValueProvider;
 import org.openjdk.jmc.flightrecorder.rules.IRule;
-import org.openjdk.jmc.flightrecorder.rules.Result;
+import org.openjdk.jmc.flightrecorder.rules.IResult;
+import org.openjdk.jmc.flightrecorder.rules.ResultProvider;
 import org.openjdk.jmc.flightrecorder.rules.RuleRegistry;
-import org.openjdk.jmc.flightrecorder.rules.Severity;
+//import org.openjdk.jmc.flightrecorder.rules.Severity;
 import org.quickperf.ExtractablePerformanceMeasure;
 import org.quickperf.jvm.jfr.JfrRecording;
 import org.quickperf.unit.Count;
@@ -38,7 +39,7 @@ public class JmcRuleCountMeasureExtractor implements ExtractablePerformanceMeasu
     public JmcRulesMeasure extractPerfMeasureFrom(JfrRecording jfrRecording) {
 
         IItemCollection jfrEvents = jfrRecording.getJfrEvents();
-        List<Result> ruleEvaluations = evaluateJmcRules(jfrEvents);
+        List<IResult> ruleEvaluations = evaluateJmcRules(jfrEvents);
 
         List<Count> jmcRules = buildJmcRuleCountsFrom(ruleEvaluations);
 
@@ -46,12 +47,14 @@ public class JmcRuleCountMeasureExtractor implements ExtractablePerformanceMeasu
 
     }
 
-    private List<Result> evaluateJmcRules(IItemCollection jfrEvents) {
-        List<Result> ruleEvaluations = new ArrayList<>();
+    private List<IResult> evaluateJmcRules(IItemCollection jfrEvents) {
+        List<IResult> ruleEvaluations = new ArrayList<>();
+        ResultProvider resultProvider = new ResultProvider();
         for (IRule rule : RuleRegistry.getRules()) {
-            RunnableFuture<Result> future = rule.evaluate(jfrEvents, IPreferenceValueProvider.DEFAULT_VALUES);
+            //RunnableFuture<IResult> future = rule.evaluate(jfrEvents, IPreferenceValueProvider.DEFAULT_VALUES, resultProvider /*TODO::*/);
+            RunnableFuture<IResult> future = rule.createEvaluation(jfrEvents, IPreferenceValueProvider.DEFAULT_VALUES, resultProvider /*TODO::*/);
             future.run();
-            Result result;
+            IResult result;
             try {
                 result = future.get();
             } catch (InterruptedException | ExecutionException e) {
@@ -62,9 +65,9 @@ public class JmcRuleCountMeasureExtractor implements ExtractablePerformanceMeasu
         return ruleEvaluations;
     }
 
-    private List<Count> buildJmcRuleCountsFrom(List<Result> ruleEvaluations) {
+    private List<Count> buildJmcRuleCountsFrom(List<IResult> ruleEvaluations) {
         List<Count> jmcRules = new ArrayList<>();
-        for (Result ruleEvaluation : ruleEvaluations) {
+        for (IResult ruleEvaluation : ruleEvaluations) {
             Count ruleScore = buildJmcRuleCountFrom(ruleEvaluation);
             if(!ruleToExclude(ruleScore)) {
                 jmcRules.add(ruleScore);
@@ -81,20 +84,20 @@ public class JmcRuleCountMeasureExtractor implements ExtractablePerformanceMeasu
                 || ruleDescription.contains("Rule: Metaspace Live Set Trend");
     }
 
-    private Count buildJmcRuleCountFrom(Result result) {
+    private Count buildJmcRuleCountFrom(IResult result) {
         StringWriter stringWriter = new StringWriter();
 
         PrintWriter printWriter = new PrintWriter(stringWriter);
         printWriter.println("Rule: " + result.getRule().getName());
-        printWriter.println("Severity: " + Severity.get(result.getScore()));
-        long score = (long) result.getScore();
+        printWriter.println("Severity: " + result.getSeverity());//old code: Severity.get(result.getScore())
+        long score = new Double(result.getSeverity().getLimit()).longValue();//TODO::long score = (long) result.getScore();
         printWriter.println("Score: " + score);
-        String longDescriptionAsHtml = result.getLongDescription();
+        String longDescriptionAsHtml = result.getExplanation();//old code: result.getLongDescription();
         String textDesc = HtmlToPlainTextTransformer.INSTANCE.convertHtmlToPlainText(longDescriptionAsHtml);
         printWriter.println("Message: " + textDesc);
 
         String description = stringWriter.toString();
-        return new Count(score, description);
+        return new Count(score, description);//TODO:: return new Count(score, description);
     }
 
 }

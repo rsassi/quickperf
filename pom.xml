@@ -42,7 +42,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <dependencies.max.jdk.version>1.7</dependencies.max.jdk.version>
+        <dependencies.max.jdk.version>1.8</dependencies.max.jdk.version>
+        <jdk.jfr.version>8.1.0</jdk.jfr.version>
         <junit4.test.version>4.12</junit4.test.version>
         <mockito.core.version>2.25.0</mockito.core.version>
         <h2.version>1.4.198</h2.version>
